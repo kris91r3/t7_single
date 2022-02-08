@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="da">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Document</title>
+    <style>
+      img {
+        width: 100%;
+      }
+
+      nav {
+        display: flex;
+
+        place-content: center;
+      }
+
+      button {
+        padding: 10px;
+        margin: 20px;
+      }
+
+      .valgt {
+        background-color: blueviolet;
+      }
+
+      section {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        grid-row: 1fr;
+        gap: 20px;
+        margin: 40px;
+      }
+
+      article {
+        border: 2px solid darkblue;
+
+        background-color: lightcyan;
+      }
+
+      h2,
+      p {
+        padding: 10px;
+      }
+    </style>
+  </head>
+  <header>
+    <h1>Alle</h1>
+    <nav>
+      <button data-troende="alle" class="valgt">Alle</button>
+      <button data-troende="ja">Troende</button>
+      <button data-troende="nej">Ikke troende</button>
+      <button data-troende="tvivler">Tvivler</button>
+    </nav>
+  </header>
+  <body>
+    <section></section>
+    <template>
+      <article>
+        <img src="" alt="" />
+        <h2 class="fornavn"></h2>
+        <p class="efternavn"></p>
+        <p class="email"></p>
+      </article>
+    </template>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", start);
+
+      const url = "https://persongalleri-5d3e.restdb.io/rest/persongalleri";
+      const key = "600fe9211346a1524ff12e31";
+      let filter = "alle";
+      let personer;
+
+      let data = [];
+
+      function start() {
+        console.log("Dom er loaded");
+        const filterknapper = document.querySelectorAll(" button");
+        filterknapper.forEach((knap) =>
+          knap.addEventListener("click", filtrerPersoner)
+        );
+        hentData();
+      }
+
+      const header = document.querySelector("header h1");
+
+      function filtrerPersoner() {
+        filter = this.dataset.troende;
+        document.querySelector(".valgt").classList.remove("valgt");
+        this.classList.add("valgt");
+        header.textContent = this.textContent;
+        vis();
+      }
+
+      async function hentData() {
+        const resspons = await fetch(url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "x-apikey": key,
+          },
+        });
+        personer = await resspons.json();
+        console.log(personer);
+        vis(personer);
+      }
+
+      const container = document.querySelector("section");
+      const template = document.querySelector("template");
+
+      function vis() {
+        console.log(personer);
+        container.textContent = "";
+        personer.forEach((person) => {
+          console.log("troende", person.troende);
+          if (filter == person.troende || filter == "alle") {
+            let klon = template.cloneNode(true).content;
+            klon.querySelector("img").src = "faces/" + person.billede;
+            klon.querySelector(".fornavn").textContent = person.fornavn;
+            klon.querySelector(".efternavn").textContent =
+              "Efternavn" + person.efternavn;
+            klon.querySelector(".email").textContent = "Email: " + person.email;
+            klon.querySelector("article").addEventListener("click", () => {
+              location.href = `02_detalje.html?id=${person._id}`;
+            });
+
+            container.appendChild(klon);
+          }
+        });
+      }
+      // hentData();
+    </script>
+  </body>
+</html>
